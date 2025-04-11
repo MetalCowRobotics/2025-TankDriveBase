@@ -4,8 +4,7 @@
 
 package frc.robot;
 
-
-
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.cameraserver.CameraServer;
@@ -16,8 +15,6 @@ import org.photonvision.PhotonUtils;
 
 import edu.wpi.first.wpilibj.Timer;
 
-
-
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
@@ -25,11 +22,15 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
+import frc.robot.subsystems.Intake;
 
 /**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to
+ * each mode, as described in the TimedRobot documentation. If you change the
+ * name of this class or
+ * the package after creating this project, you must also update the
+ * build.gradle file in the
  * project.
  */
 public class Robot extends TimedRobot {
@@ -48,24 +49,28 @@ public class Robot extends TimedRobot {
   // Angle between horizontal and the camera.
   final double CAMERA_PITCH_RADIANS = Units.degreesToRadians(45);
 
- public Robot() {
-      CameraServer.startAutomaticCapture();
-  
-    }
+  private final Intake intakesubsystem = new Intake();
+
+  public Robot() {
+    CameraServer.startAutomaticCapture();
+
+  }
   // ADIS16470_IMU gyro = new ADIS16470_IMU();
   // Timer time = new Timer();
   // CANSparkMax neoController = new CANSparkMax(17, MotorType.kBrushless);
-  
+
   // /**
-  //  * This function is run when the robot is first started up and should be used for any
-  //  * initialization code.
-  //  */
+  // * This function is run when the robot is first started up and should be used
+  // for any
+  // * initialization code.
+  // */
   @Override
-  public void robotInit() {}
+  public void robotInit() {
+  }
 
   @Override
   public void robotPeriodic() {
-    
+
   }
 
   @Override
@@ -76,7 +81,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     // neoController.setVoltage(0.2);
-    
+
   }
 
   @Override
@@ -86,19 +91,27 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {    
-     double drive = driverController.getLeftY();
-     double rotate = driverController.getRightX();
+  public void teleopPeriodic() {
+    double drive = driverController.getLeftY();
+    double rotate = driverController.getRightX();
 
-     fRight.setInverted(true);
-     bRight.setInverted(true);
+    fRight.setInverted(true);
+    bRight.setInverted(true);
 
-     fRight.set(TalonSRXControlMode.PercentOutput, drive-rotate/2);
-     bRight.set(TalonSRXControlMode.PercentOutput, drive-rotate/2);
-     fLeft.set(TalonSRXControlMode.PercentOutput, drive+rotate/2);
-     bLeft.set(TalonSRXControlMode.PercentOutput, drive+rotate/2);
+    fRight.set(TalonSRXControlMode.PercentOutput, drive - rotate / 2);
+    bRight.set(TalonSRXControlMode.PercentOutput, drive - rotate / 2);
+    fLeft.set(TalonSRXControlMode.PercentOutput, drive + rotate / 2);
+    bLeft.set(TalonSRXControlMode.PercentOutput, drive + rotate / 2);
 
-    //Drift Code
+    if (driverController.getAButton()) {
+      intakesubsystem.runIntake();
+    } else if (driverController.getBButton()) {
+      intakesubsystem.outIntake();
+    } else {
+      intakesubsystem.stopIntake();
+    }
+
+    // Drift Code
 
     // double vertical;
     // double horizontal;
@@ -108,13 +121,16 @@ public class Robot extends TimedRobot {
     // horizontal = -0.75 * driverController.getLeftX();
     // pivot = -driverController.getRightX();
 
-    // fRight.set(TalonSRXControlMode.PercentOutput, (pivot + (-vertical + horizontal)));
-    // bRight.set(TalonSRXControlMode.PercentOutput, pivot + (-vertical - horizontal));
-    // fLeft.set(TalonSRXControlMode.PercentOutput,(-pivot + (-vertical - horizontal)));
-    // bLeft.set(TalonSRXControlMode.PercentOutput, (-pivot + (-vertical + horizontal)));
+    // fRight.set(TalonSRXControlMode.PercentOutput, (pivot + (-vertical +
+    // horizontal)));
+    // bRight.set(TalonSRXControlMode.PercentOutput, pivot + (-vertical -
+    // horizontal));
+    // fLeft.set(TalonSRXControlMode.PercentOutput,(-pivot + (-vertical -
+    // horizontal)));
+    // bLeft.set(TalonSRXControlMode.PercentOutput, (-pivot + (-vertical +
+    // horizontal)));
 
-
-   // Tank Drive
+    // Tank Drive
 
     // double drive = driverController.getLeftY();
     // double rotate = driverController.getRightX();
@@ -128,39 +144,43 @@ public class Robot extends TimedRobot {
     // bLeft.set(TalonSRXControlMode.PercentOutput, drive+rotate/2);
 
     // if(driverController.getAButton()){
-      
-      // var result = camera.getLatestResult();
-      // double range =  PhotonUtils.calculateDistanceToTargetMeters(
-      //                           CAMERA_HEIGHT_METERS,
-      //                           TARGET_HEIGHT_METERS,
-      //                           CAMERA_PITCH_RADIANS,
-      //                           Units.degreesToRadians(result.getBestTarget().getPitch()));
 
-      // System.out.println(range);
-     
+    // var result = camera.getLatestResult();
+    // double range = PhotonUtils.calculateDistanceToTargetMeters(
+    // CAMERA_HEIGHT_METERS,
+    // TARGET_HEIGHT_METERS,
+    // CAMERA_PITCH_RADIANS,
+    // Units.degreesToRadians(result.getBestTarget().getPitch()));
+
+    // System.out.println(range);
+
     // }
-
-
 
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+  }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+  }
 
   @Override
-  public void testInit() {}
+  public void testInit() {
+  }
 
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+  }
 
   @Override
-  public void simulationInit() {}
+  public void simulationInit() {
+  }
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+  }
 
   private void applyDriverInputs() {
   }
@@ -172,56 +192,55 @@ public class Robot extends TimedRobot {
 
  */
 
-
- /*
-  * 
-
-      gyro.reset();
-    time.reset();
-    time.start();
-
-
-
-
-      System.out.println(Math.round(gyro.getAngle()));
-    System.out.println(time.get());
-    double angle = Math.round(gyro.getAngle());
-
-    fRight.setInverted(true);
-    bRight.setInverted(true);
-
-    // while(time.get() < 2){
-    //   fLeft.set(TalonSRXControlMode.PercentOutput, 0.2);
-    //   bLeft.set(TalonSRXControlMode.PercentOutput, 0.2);
-    //   fRight.set(TalonSRXControlMode.PercentOutput, 0.2);
-    //   bRight.set(TalonSRXControlMode.PercentOutput, 0.2);
-    // }
-
-    while(angle <= 90){
-      double speed = 0.5 - ((angle)/18)/10;
-      fRight.set(TalonSRXControlMode.PercentOutput, speed);
-      bRight.set(TalonSRXControlMode.PercentOutput, speed);
-    }
-
-      
-
-
-
-   
-    // if (angle > 2){
-    //   fLeft.set(TalonSRXControlMode.PercentOutput, 0.2);
-    //   bLeft.set(TalonSRXControlMode.PercentOutput, 0.2);
-    //   fRight.set(TalonSRXControlMode.PercentOutput, 0);
-    //   bRight.set(TalonSRXControlMode.PercentOutput, 0);
-    // } else if (angle < -2){
-    //   fRight.set(TalonSRXControlMode.PercentOutput, 0.2);
-    //   bRight.set(TalonSRXControlMode.PercentOutput, 0.2);
-    //   fLeft.set(TalonSRXControlMode.PercentOutput, 0);
-    //   bLeft.set(TalonSRXControlMode.PercentOutput, 0);
-    // }else{
-    //   fRight.set(TalonSRXControlMode.PercentOutput, 0.2);
-    //   fLeft.set(TalonSRXControlMode.PercentOutput, 0.2);
-    //   bRight.set(TalonSRXControlMode.PercentOutput, 0.2);
-    //   bLeft.set(TalonSRXControlMode.PercentOutput, 0.2);
-    // }
-  */
+/*
+ * 
+ * 
+ * gyro.reset();
+ * time.reset();
+ * time.start();
+ * 
+ * 
+ * 
+ * 
+ * System.out.println(Math.round(gyro.getAngle()));
+ * System.out.println(time.get());
+ * double angle = Math.round(gyro.getAngle());
+ * 
+ * fRight.setInverted(true);
+ * bRight.setInverted(true);
+ * 
+ * // while(time.get() < 2){
+ * // fLeft.set(TalonSRXControlMode.PercentOutput, 0.2);
+ * // bLeft.set(TalonSRXControlMode.PercentOutput, 0.2);
+ * // fRight.set(TalonSRXControlMode.PercentOutput, 0.2);
+ * // bRight.set(TalonSRXControlMode.PercentOutput, 0.2);
+ * // }
+ * 
+ * while(angle <= 90){
+ * double speed = 0.5 - ((angle)/18)/10;
+ * fRight.set(TalonSRXControlMode.PercentOutput, speed);
+ * bRight.set(TalonSRXControlMode.PercentOutput, speed);
+ * }
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * // if (angle > 2){
+ * // fLeft.set(TalonSRXControlMode.PercentOutput, 0.2);
+ * // bLeft.set(TalonSRXControlMode.PercentOutput, 0.2);
+ * // fRight.set(TalonSRXControlMode.PercentOutput, 0);
+ * // bRight.set(TalonSRXControlMode.PercentOutput, 0);
+ * // } else if (angle < -2){
+ * // fRight.set(TalonSRXControlMode.PercentOutput, 0.2);
+ * // bRight.set(TalonSRXControlMode.PercentOutput, 0.2);
+ * // fLeft.set(TalonSRXControlMode.PercentOutput, 0);
+ * // bLeft.set(TalonSRXControlMode.PercentOutput, 0);
+ * // }else{
+ * // fRight.set(TalonSRXControlMode.PercentOutput, 0.2);
+ * // fLeft.set(TalonSRXControlMode.PercentOutput, 0.2);
+ * // bRight.set(TalonSRXControlMode.PercentOutput, 0.2);
+ * // bLeft.set(TalonSRXControlMode.PercentOutput, 0.2);
+ * // }
+ */

@@ -6,13 +6,15 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
+import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
-
 import edu.wpi.first.wpilibj.Timer;
 
 // Copyright (c) FIRST and other WPILib contributors.
@@ -23,6 +25,9 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import frc.robot.subsystems.Intake;
+import frc.robot.constants.constants;
+import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Kicker;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -40,6 +45,7 @@ public class Robot extends TimedRobot {
   TalonSRX fLeft = new TalonSRX(16);
   TalonSRX bRight = new TalonSRX(3);
   TalonSRX bLeft = new TalonSRX(2);
+  VictorSPX shooter = new VictorSPX(2);
 
   PhotonCamera camera = new PhotonCamera("MicrosoftLiveCamHD-3000");
 
@@ -50,6 +56,8 @@ public class Robot extends TimedRobot {
   final double CAMERA_PITCH_RADIANS = Units.degreesToRadians(45);
 
   private final Intake intakesubsystem = new Intake();
+  private final Shooter shootersubsystem = new Shooter();
+  private final Kicker Kickersubsystem = new Kicker();
 
   public Robot() {
     CameraServer.startAutomaticCapture();
@@ -93,7 +101,12 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     double drive = driverController.getLeftY();
-    double rotate = driverController.getRightX();
+    double rotate = driverController.getLeftX();
+    double updown = driverController.getRightY();
+
+    shootersubsystem.shooterPivot();
+
+    Shooter.speed = updown;
 
     fRight.setInverted(true);
     bRight.setInverted(true);
@@ -102,15 +115,27 @@ public class Robot extends TimedRobot {
     bRight.set(TalonSRXControlMode.PercentOutput, drive - rotate / 2);
     fLeft.set(TalonSRXControlMode.PercentOutput, drive + rotate / 2);
     bLeft.set(TalonSRXControlMode.PercentOutput, drive + rotate / 2);
+    shooter.set(VictorSPXControlMode.PercentOutput, updown);
 
     if (driverController.getAButton()) {
       intakesubsystem.runIntake();
+      shootersubsystem.shooterIntake();
     } else if (driverController.getBButton()) {
       intakesubsystem.outIntake();
     } else {
       intakesubsystem.stopIntake();
     }
+    if (driverController.getYButton()) {
+      shootersubsystem.shoot();
+    } else if (driverController.getXButton()) {
+      shootersubsystem.stop();
+    }
 
+    if (driverController.getRightBumper()) {
+      Kickersubsystem.runkicker();
+    } else {
+      Kickersubsystem.stopkicker();
+    }
     // Drift Code
 
     // double vertical;

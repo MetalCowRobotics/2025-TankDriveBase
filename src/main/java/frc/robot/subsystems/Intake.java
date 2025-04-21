@@ -16,12 +16,10 @@ import edu.wpi.first.wpilibj.ADIS16470_IMU;
         private VictorSPX intakemotor = new VictorSPX(10);
 
         public Intake() {
-
-
         }
 
         public void runIntake() {
-            intakemotor.set(ControlMode.PercentOutput, 0.5);
+            intakemotor.set(ControlMode.PercentOutput, 0.6);
         }
         
         public void outIntake() {
